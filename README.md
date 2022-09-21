@@ -166,10 +166,10 @@ const value: (
 ```
 
 ```ts
-form.field("fieldName").number("is", "10", "The value must be 10");
+form.field("fieldName").number("is", 10, "The value must be 10");
 form.field("fieldName").length(
     "gte",
-    "8",
+    8,
     "The value must be at least 8 characters long"
 );
 ```
