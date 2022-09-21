@@ -109,10 +109,10 @@ const serialize: () => SerializedForm;
 
 #### .validate()
 
-Validates the form data. The returned object is typed (`Record<fieldname, string | string>`).
+Validates the form data. The returned object is typed (`Record<fieldname, string | string>`). Returns null if it passes all rules.
 
 ```ts
-const validate: () => Record<string, string>;
+const validate: () => Record<string, string> | null;
 ```
 
 #### .field()
