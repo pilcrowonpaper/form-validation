@@ -1,0 +1,30 @@
+{
+    "name": "adria",
+    "version": "0.1.0",
+    "description": "2 in 1 form validation library",
+    "main": "src/index.ts",
+    "scripts": {
+      "test": "npx ts-node --esm -T src/index.test.ts"
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/pilcrowOnPaper/adria.git"
+    },
+    "keywords": [
+      "form",
+      "validation"
+    ],
+    "author": "pilcrow",
+    "license": "MIT",
+    "bugs": {
+      "url": "https://github.com/pilcrowOnPaper/adria/issues"
+    },
+    "homepage": "https://github.com/pilcrowOnPaper/adria#readme",
+    "devDependencies": {
+        "@types/cli-color": "^2.0.2"
+    },
+    "dependencies": {
+        "cli-color": "^2.0.3"
+    }
+  }
+  
