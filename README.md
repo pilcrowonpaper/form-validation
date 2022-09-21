@@ -133,6 +133,10 @@ Sets the field to be required. Will fail if the input is `""`.
 const required: (errorMessage: string) => this;
 ```
 
+```ts
+form.field("fieldName").required("This is a required field");
+```
+
 ##### .value()
 
 Sets a rule that checks the value of the field.
@@ -143,6 +147,10 @@ const value: (
     ruleValue: string | string[],
     errorMessage: string
 ) => this;
+```
+
+```ts
+form.field("fieldName").value("is", "hello", "The value must be 'hello'");
 ```
 
 ##### .number()
@@ -157,6 +165,15 @@ const value: (
 ) => this;
 ```
 
+```ts
+form.field("fieldName").number("is", "10", "The value must be 10");
+form.field("fieldName").length(
+    "gte",
+    "8",
+    "The value must be at least 8 characters long"
+);
+```
+
 ##### .type()
 
 Sets a rule that checks the type (string, number) of field value.
@@ -165,4 +182,8 @@ Sets a rule that checks the type (string, number) of field value.
 type T = "string" | "number";
 
 const value: (ruleType: T, ruleValue: T | T[], errorMessage: string) => this;
+```
+
+```ts
+form.field("fieldName").type("is", "number", "The value must be a number");
 ```
