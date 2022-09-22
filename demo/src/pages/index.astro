@@ -5,10 +5,13 @@ import { form } from "../utils/form.js";
 export let errors: Awaited<ReturnType<typeof form["validate"]>> = null;
 export let success = false;
 
+let formValues: Record<string, any> = {};
+
 if (Astro.request.method === "POST") {
     const formData = await Astro.request.formData();
     errors = await form.validate(formData);
     if (!errors) success = true;
+    formValues = Object.fromEntries(formData);
 }
 ---
 
@@ -23,7 +26,7 @@ if (Astro.request.method === "POST") {
     <body class="flex place-content-center place-items-center py-12">
         <div class="max-w-sm w-full">
             <h1 class="text-4xl font-bold">Adria</h1>
-            <Form client:load {errors} success={success}/>
+            <Form client:load {errors} success={success} {formValues} />
         </div>
     </body>
 </html>

@@ -2,6 +2,7 @@
     import { form } from "../utils/form.js";
     export let errors: Awaited<ReturnType<typeof form["validate"]>> = null;
     export let success = false;
+    export let formValues: Record<string, any> = {};
 
     let useServerSideValidation = false;
 
@@ -9,7 +10,7 @@
         success = false;
         const formElement = e.target as HTMLFormElement;
         if (useServerSideValidation) {
-            formElement.submit()
+            formElement.submit();
         } else {
             const formData = new FormData(formElement);
             errors = await form.validate(formData);
@@ -27,6 +28,7 @@
             name="email"
             id="email"
             class="border rounded px-4 py-1.5 w-full"
+            value={formValues.email || ""}
         />
         <p class="text-sm text-red-400">{errors?.email || ""}</p>
     </div>
@@ -37,6 +39,7 @@
             name="password"
             id="password"
             class="border rounded px-4 py-1.5 w-full"
+            value={formValues.password || ""}
         />
         <p class="text-sm text-red-400">{errors?.password || ""}</p>
     </div>
@@ -48,6 +51,7 @@
             name="password-confirm"
             id="password-confirm"
             class="border rounded px-4 py-1.5 w-full"
+            value={formValues["password-confirm"] || ""}
         />
         <p class="text-sm text-red-400">{errors?.["password-confirm"] || ""}</p>
     </div>

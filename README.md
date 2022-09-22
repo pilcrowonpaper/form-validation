@@ -6,6 +6,8 @@ A super simple form validation library, with autocomplete and value/type checkin
 npm i adria-forms
 ```
 
+Demo: https://adria-demo.vercel.app
+
 ## Overview
 
 ```ts
@@ -13,6 +15,7 @@ import { Form } from "adria-forms";
 
 const form = new Form().field("username", (value) => {
     if (!value) return "Please enter your username";
+    if (typeof value !== "string") return "Invalid input";
     if (value.length < 4) return "Username must be at least 4 characters long";
     return; // success
 });
