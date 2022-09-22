@@ -42,7 +42,7 @@ The error returned by `validate()` looks something like this
 }
 ```
 
-All fields are optional by default, and Adria will not check against the rules if the field input is empty. Adria will check against the field's rules until it fails one or passes all of them, and continue that for each field. That means Adria can return multiple errors, just one from each field.
+All fields are optional by default, meaning it will not check against the rules if the field input is empty. Adria will check against the field's rules until it fails or passes all of them, and continue that for each field. This means Adria can return multiple errors, but just one from each field.
 
 ## Rules
 
@@ -81,7 +81,7 @@ Checks the type ("string" or "number") of the field.
 
 ## Reference
 
-### createForm
+### createForm()
 
 Creates a form with the provided field names.
 
@@ -89,7 +89,7 @@ Creates a form with the provided field names.
 const createForm: (...fieldNames: string[]) => Form;
 ```
 
-### parseForm
+### parseForm()
 
 Creates a form from a serialized form.
 
@@ -125,7 +125,9 @@ const field: (
 ) => Field;
 ```
 
-##### .required()
+### Field
+
+#### .required()
 
 Sets the field to be required. Will fail if the input is `""`.
 
@@ -133,11 +135,13 @@ Sets the field to be required. Will fail if the input is `""`.
 const required: (errorMessage: string) => this;
 ```
 
+##### Example
+
 ```ts
 form.field("fieldName").required("This is a required field");
 ```
 
-##### .value()
+#### .value()
 
 Sets a rule that checks the value of the field.
 
@@ -149,11 +153,13 @@ const value: (
 ) => this;
 ```
 
+##### Example
+
 ```ts
 form.field("fieldName").value("is", "hello", "The value must be 'hello'");
 ```
 
-##### .number()
+#### .number()
 
 Sets a rule that checks the number converted rule of the field. Will fail if the value cannot be converted to a number.
 
@@ -165,16 +171,18 @@ const value: (
 ) => this;
 ```
 
+##### Example
+
 ```ts
-form.field("fieldName").number("is", 10, "The value must be 10");
-form.field("fieldName").length(
+form.field("fieldName1").number("is", 10, "The value must be 10");
+form.field("fieldName2").length(
     "gte",
     8,
     "The value must be at least 8 characters long"
 );
 ```
 
-##### .type()
+#### .type()
 
 Sets a rule that checks the type (string, number) of field value.
 
@@ -183,6 +191,8 @@ type T = "string" | "number";
 
 const value: (ruleType: T, ruleValue: T | T[], errorMessage: string) => this;
 ```
+
+##### Example
 
 ```ts
 form.field("fieldName").type("is", "number", "The value must be a number");
