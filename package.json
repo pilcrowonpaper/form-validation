@@ -1,20 +1,28 @@
 {
-    "name": "adria",
+    "name": "adria-forms",
     "version": "0.1.0",
     "description": "2 in 1 form validation library",
-    "main": "src/index.ts",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "module": "dist/index.js",
     "type": "module",
+    "files": [
+        "dist/**/*"
+    ],
     "scripts": {
         "build": "tsc"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/pilcrowOnPaper/adria.git"
+        "url": "https://github.com/pilcrowOnPaper/adria"
     },
     "keywords": [
         "form",
         "validation"
     ],
+    "exports": {
+        ".": "./dist/index.js"
+    },
     "author": "pilcrow",
     "license": "MIT",
     "bugs": {
