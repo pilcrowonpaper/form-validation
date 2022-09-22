@@ -1,6 +1,6 @@
 # Adria
 
-Adria allows you to write your validation code in your server, serialize it, and use it in the client. Autocomplete with the power of TypeScript!
+A super simple form validation library, with autocomplete and value/type checking using the power of TypeScript.
 
 ```bash
 npm i adria-forms
@@ -8,192 +8,102 @@ npm i adria-forms
 
 ## Overview
 
-Declare the field (input) names to validate and add rules (required, length, etc) to each of them. Rules can be chained like below.
-
 ```ts
-import { createForm } from "adria-forms";
+import { Form } from "adria-forms";
 
-const form = createForm("username"); // declare fields to validate
-form.field("username") // select the field to add the rule
-    .required("Please enter your username") // message when input is invalid (in this case, no input)
-    .length("gte", 4, "Username must be at least 4 characters long"); // check length of input: must be Greater Than or Equal to 4
+const form = new Form().field("username", (value) => {
+    if (!value) return "Please enter your username";
+    if (value.length < 4) return "Username must be at least 4 characters long";
+    return; // success
+});
 
-const errors = form.validate(formData);
+const formData = new FormData();
+
+const errors = await form.validate(formData);
+/*
+usernameError will be typed as "Please enter..." or "Username must be..."
+*/
+const usernameError = errors?.username; // autocomplete
 ```
-
-This form can be serialized into a POJO object, sent to the client, and used in the browser.
-
-```ts
-const serializedForm = form.serialize();
-```
-
-```ts
-import { parseForm } from "adria-forms";
-
-const form = parseForm(serializedForm);
-const errors = form.validate(formData);
-```
-
-The error returned by `validate()` looks something like this
-
-```ts
-{
-    "username": "Username must be at least 4 characters long"
-}
-```
-
-All fields are optional by default, meaning it will not check against the rules if the field input is empty. Adria will check against the field's rules until it fails or passes all of them, and continue that for each field. This means Adria can return multiple errors, but just one from each field.
-
-## Rules
-
-### value
-
-Checks against the string value of the field.
-
-| ruleType | ruleValue    | description                                    |
-| -------- | ------------ | ---------------------------------------------- |
-| is       | string       | _value_ equals to _ruleValue_                  |
-| match    | regex string | _value_ matches regular expression _ruleValue_ |
-| in       | string[]     | _ruleValue_ includes _value_                   |
-| isField  | field name   | _value_ equals the value of field _ruleValue_  |
-
-### number, length
-
-Checks against the number value of the field. Will fail if the value cannot be converted into a number.
-
-| ruleType | ruleValue | description                   |
-| -------- | --------- | ----------------------------- |
-| is       | number    | _value_ equals to _ruleValue_ |
-| in       | number[]  | _ruleValue_ includes _value_  |
-| gt       | number    | _value_ > _ruleValue_         |
-| gte      | number    | _value_ >= _ruleValue_        |
-| lte      | number    | _value_ <= _ruleValue_        |
-| lt       | number    | _value_ > _ruleValue_         |
-
-### type
-
-Checks the type ("string" or "number") of the field.
-
-| ruleType | ruleValue              | description                   |
-| -------- | ---------------------- | ----------------------------- |
-| is       | "string", "number"     | _value_ equals to _ruleValue_ |
-| in       | ("string", "number")[] | _ruleValue_ includes _value_  |
 
 ## Reference
 
-### createForm()
+### .field()
 
-Creates a form with the provided field names.
-
-```ts
-const createForm: (...fieldNames: string[]) => Form;
-```
-
-### parseForm()
-
-Creates a form from a serialized form.
-
-```ts
-const parseForm: (serializedForm: Form) => Form;
-```
-
-### Form
-
-#### .serialize()
-
-Creates a serialized version of the form.
-
-```ts
-const serialize: () => SerializedForm;
-```
-
-#### .validate()
-
-Validates the form data. The returned object is typed (`Record<fieldname, string | string>`). Returns null if it passes all rules.
-
-```ts
-const validate: () => Record<string, string> | null;
-```
-
-#### .field()
-
-Selects a field.
+Creates a new field. `fieldName` cannot be an existing field name, and `validate` can be a synchronous or asynchronous function. A `void` return from `validate` will tell Adria the value has passed the validation.
 
 ```ts
 const field: (
-    fieldName: string // field name
-) => Field;
-```
-
-### Field
-
-#### .required()
-
-Sets the field to be required. Will fail if the input is `""`.
-
-```ts
-const required: (errorMessage: string) => this;
-```
-
-##### Example
-
-```ts
-form.field("fieldName").required("This is a required field");
-```
-
-#### .value()
-
-Sets a rule that checks the value of the field.
-
-```ts
-const value: (
-    ruleType: string,
-    ruleValue: string | string[],
-    errorMessage: string
+    fieldName: string,
+    validate: (
+        value: null | FormDataEntryValue,
+        formData: Map<string, FormDataEntryValue | null>
+    ) => MaybePromise<void | any>
 ) => this;
 ```
 
-##### Example
+#### Example
 
 ```ts
-form.field("fieldName").value("is", "hello", "The value must be 'hello'");
+new Form()
+    .field("username", (value) => {
+        if (!value)
+            return {
+                code: 0,
+                message: "empty input",
+            };
+        return; // success
+    })
+    .field("password", (_, formData) => {
+        const usernameField = formData.get("username"); // autocompletes username, password
+        const passwordField = formData.get("randomFieldName"); // TS will yell at you since the field doesn't exist yet
+    })
+    .field(
+        "username" // TS will yell at you since this field already exists
+        // ...
+    );
 ```
 
-#### .number()
+### .validate()
 
-Sets a rule that checks the number converted rule of the field. Will fail if the value cannot be converted to a number.
+Validates the form data. Will only check fields defined with `.field()`. Will return `null` if the form data is valid or a fieldName:errorMessage record if not.
 
 ```ts
-const value: (
-    ruleType: string,
-    ruleValue: string | string[],
-    errorMessage: string
-) => this;
+const validate: (formData: FormData) => Promise<Record<string, any> | null>;
 ```
 
-##### Example
+#### Example
 
 ```ts
-form.field("fieldName1").number("is", 10, "The value must be 10");
-form.field("fieldName2").length(
-    "gte",
-    8,
-    "The value must be at least 8 characters long"
-);
+const form = new Form()
+    .field("username", () => {
+        return "error";
+    })
+    .field("password", () => {
+        return {
+            code: 0,
+        };
+    });
+
+const errors = await form.validate(formData as FormData);
+
+const userNameError: "fail" = errors.username; // autocomplete username, password
+const randomError = errors.random; // TS will yell at you since field random does not exist
+const passwordErrorCode: number = errors.password.code; // since password can return an object, code will be typed as number and not 0
 ```
 
-#### .type()
+## TypeScript tips
 
-Sets a rule that checks the type (string, number) of field value.
-
-```ts
-type T = "string" | "number";
-
-const value: (ruleType: T, ruleValue: T | T[], errorMessage: string) => this;
-```
-
-##### Example
+In the previous example (validate()), errors will only be typed with a value when the validate function returns a string/number. We can fix this by typing the return value of the validate function `as const`.
 
 ```ts
-form.field("fieldName").type("is", "number", "The value must be a number");
+const form = new Form().field("password", () => {
+    return {
+        code: 0,
+    } as const;
+});
+
+const errors = await form.validate(formData as FormData);
+
+const passwordErrorCode: number = errors.password.code; // typed as 0, and not number as before
 ```

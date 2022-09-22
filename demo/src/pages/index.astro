@@ -1,0 +1,29 @@
+---
+import Form from "../components/Form.svelte";
+
+import { form } from "../utils/form.js";
+export let errors: Awaited<ReturnType<typeof form["validate"]>> = null;
+export let success = false;
+
+if (Astro.request.method === "POST") {
+    const formData = await Astro.request.formData();
+    errors = await form.validate(formData);
+    if (!errors) success = true;
+}
+---
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="viewport" content="width=device-width" />
+        <meta name="generator" content={Astro.generator} />
+        <title>Astro</title>
+    </head>
+    <body class="flex place-content-center place-items-center py-12">
+        <div class="max-w-sm w-full">
+            <h1 class="text-4xl font-bold">Adria</h1>
+            <Form client:load {errors} success={success}/>
+        </div>
+    </body>
+</html>
