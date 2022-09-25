@@ -2,15 +2,15 @@
     "name": "adria-forms",
     "version": "0.2.3",
     "description": "A super simple form validation library",
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
-    "module": "dist/index.js",
+    "main": "index.js",
+    "types": "index.d.ts",
+    "module": "index.js",
     "type": "module",
     "files": [
-        "dist/**/*"
+        "./**/*"
     ],
     "scripts": {
-        "build": "tsc"
+        "build": "tsc && cp ./package.json ./dist && cp ./README.md ./dist"
     },
     "repository": {
         "type": "git",
@@ -21,7 +21,7 @@
         "validation"
     ],
     "exports": {
-        ".": "./dist/index.js"
+        ".": "./index.js"
     },
     "author": "pilcrow",
     "license": "MIT",
