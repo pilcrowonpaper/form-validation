@@ -11,8 +11,8 @@ type Not<T, A> = T extends A ? never : T;
 type FieldRecord<T> = Record<string, Validate<T>>;
 
 type ErrorRecord<F extends FieldRecord<string> | FieldRecord<never>> = {
-    [FieldName in keyof F]: ReturnType<F[FieldName]>;
-};
+    [FieldName in keyof F]: Awaited<ReturnType<F[FieldName]>> | (string & Record<never, never>);
+}
 
 export class Form<Fields extends FieldRecord<never> = {}> {
     private fields: Fields;
