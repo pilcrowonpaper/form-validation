@@ -1,56 +1,52 @@
-export const pattern = <R extends RegExp, E extends any>(
-  regexp: R,
-  error: E
-) => {
+export const pattern = (regexp: RegExp, error: any) => {
   return (value: any) => {
-    if (typeof value !== "string") return error;
-    if (!regexp.test(value)) return error;
+    if (typeof value !== "string") throw error;
+    if (!regexp.test(value)) throw error;
+    return value;
   };
 };
 
-export const max = <Max extends number, E extends any>(
-  maxNum: Max,
-  error: E
-) => {
+export const max = (maxNum: number, error: any) => {
   return (value: any) => {
-    if (typeof value !== "string" && typeof value !== "number") return error;
-    if (Number(value) > maxNum) return error;
+    const parsedValue = Number(value);
+    if (isNaN(parsedValue)) throw error;
+    if (parsedValue > maxNum) throw error;
+    return parsedValue;
   };
 };
 
-export const min = <Min extends number, E extends any>(
-  minNum: Min,
-  error: E
-) => {
+export const min = (minNum: number, error: any) => {
   return (value: any) => {
-    if (typeof value !== "string" && typeof value !== "number") return error;
-    if (Number(value) < minNum) return error;
+    const parsedValue = Number(value);
+    if (isNaN(parsedValue)) throw error;
+    if (parsedValue < minNum) throw error;
+    return parsedValue;
   };
 };
 
-export const maxLength = <Max extends number, E extends any>(
-  maxNum: Max,
-  error: E
-) => {
+export const maxLength = (maxNum: number, error: any) => {
   return (value: any) => {
-    if (typeof value !== "string" && typeof value !== "number") return error;
-    if (value.toString().length > maxNum) return error;
+    if (typeof value !== "string" && typeof value !== "number") throw error;
+    const parsedValue = value.toString();
+    if (parsedValue.length > maxNum) throw error;
+    return parsedValue;
   };
 };
 
-export const minLength = <Min extends number, E extends any>(
-  minNum: Min,
-  error: E
-) => {
+export const minLength = (minNum: number, error: any) => {
   return (value: any) => {
-    if (typeof value !== "string" && typeof value !== "number") return error;
-    if (value.toString().length < minNum) return error;
+    if (typeof value !== "string" && typeof value !== "number") throw error;
+    const parsedValue = value.toString();
+    if (parsedValue.length < minNum) throw error;
+    return parsedValue;
   };
 };
 
-export const required = <E extends any>(error: E) => {
+export const required = (error: any) => {
   return (value: any) => {
-    if (typeof value !== "string" && typeof value !== "number") return error;
-    if (value.toString().length < 1) return error;
+    if (typeof value !== "string" && typeof value !== "number") throw error;
+    const parsedValue = value.toString();
+    if (parsedValue.length < 1) throw error;
+    return parsedValue;
   };
 };

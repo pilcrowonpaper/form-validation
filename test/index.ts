@@ -25,9 +25,9 @@ const main = async () => {
   formData.set("max", "6");
   formData.set("maxLength", "adsj3s");
   formData.set("pattern", "");
-  const formDataErrors = await form.validate(formData);
-  console.log(formDataErrors);
-  const objectErrors1 = await form.validate({
+  const { data: data1, errors: errors1 } = await form.parse(formData);
+  console.log(errors1);
+  const { data: data2, errors: errors2 } = await form.parse({
     required: "",
     min: 1,
     minLength: "a",
@@ -35,7 +35,8 @@ const main = async () => {
     maxLength: "idiuwhdw",
     pattern: "",
   });
-  const objectErrors2 = await form.validate({
+
+  const { data: data3, errors: errors3 } = await form.parse({
     required: "1",
     min: 2,
     minLength: "a3",
@@ -43,8 +44,8 @@ const main = async () => {
     maxLength: "asejf",
     pattern: "a",
   });
-  console.log(objectErrors1);
-  console.log(objectErrors2);
+  console.log(errors2);
+  console.log(errors3);
 };
 
 main();

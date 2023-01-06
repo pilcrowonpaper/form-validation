@@ -1,6 +1,6 @@
 {
   "name": "adria-forms",
-  "version": "0.2.4",
+  "version": "0.3.0",
   "description": "A super simple form validation library",
   "main": "index.js",
   "types": "index.d.ts",

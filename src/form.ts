@@ -2,15 +2,16 @@ type MaybePromise<T> = T | Promise<T>;
 
 type FormDataMap<T = any> = Map<T, any | null>;
 
-type Validate<T> = (
+type ParseFunction<T> = (
   value: any | null,
   form: FormDataMap<T>
-) => MaybePromise<any | void>;
+) => MaybePromise<any>;
+
 type Not<T, A> = T extends A ? never : T;
 
-type FieldRecord<T> = Record<string, Validate<T>>;
+type FieldRecord<T> = Record<string, ParseFunction<T>>;
 
-type ErrorRecord<F extends FieldRecord<string> | FieldRecord<never>> = {
+type ResultRecord<F extends FieldRecord<string> | FieldRecord<never>> = {
   [FieldName in keyof F]: Awaited<ReturnType<F[FieldName]>>;
 };
 
@@ -21,29 +22,52 @@ export class Form<Fields extends FieldRecord<never> = {}> {
   }
   public field = <
     FieldName extends string,
-    V extends Validate<keyof Fields | FieldName>
+    PF extends ParseFunction<keyof Fields | FieldName>
   >(
     fieldName: Not<FieldName, keyof Fields>,
-    validate: V
+    parseFunction: PF
   ) => {
-    this.fields[fieldName] = validate as any;
-    return this as any as Form<Fields & Record<FieldName, V>>;
+    this.fields[fieldName] = parseFunction as any;
+    return this as any as Form<Fields & Record<FieldName, PF>>;
   };
-  public validate = async (
+  public parse = async (
     formData: FormData | Record<string, string | number>
-  ) => {
+  ): Promise<
+    | {
+        errors: null;
+        data: ResultRecord<Fields>;
+      }
+    | {
+        errors: {
+          [k in keyof Fields]?: unknown;
+        };
+        data: null;
+      }
+  > => {
     const errors: Record<string, any> = {};
     const formDataMap =
       formData instanceof FormData
         ? (new Map(formData.entries()) as FormDataMap)
         : new Map(Object.entries(formData));
-    for (const [fieldName, validate] of Object.entries(this.fields)) {
+    const data: Record<string, any> = {};
+    for (const [fieldName, parse] of Object.entries(this.fields)) {
       const formValue = formDataMap.get(fieldName);
-      const result = await validate(formValue, formDataMap as any);
-      if (result === undefined) continue;
-      errors[fieldName] = result;
+      try {
+        const parseResult = await parse(formValue, formDataMap as any);
+        if (parseResult === undefined) continue;
+        data[fieldName] = parseResult;
+      } catch (e) {
+        errors[fieldName] = e;
+      }
     }
-    if (Object.keys(errors).length > 0) return errors as ErrorRecord<Fields>;
-    return null;
+    if (Object.keys(errors).length > 0)
+      return {
+        errors: errors as any,
+        data: null,
+      };
+    return {
+      errors: null,
+      data: data as any,
+    };
   };
 }

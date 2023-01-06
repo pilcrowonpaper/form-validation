@@ -1,9 +1,11 @@
 # Adria
 
-A super simple form validation library, with autocomplete and value/type checking using the power of TypeScript.
+A super simple form validation and parsing library written in TypeScript. Works both in the client and server.
 
 ```bash
 npm i adria-forms
+yarn add adria-forms
+pnpm add adria-forms
 ```
 
 Demo: https://adria-demo.vercel.app
@@ -14,48 +16,49 @@ Demo: https://adria-demo.vercel.app
 import { Form } from "adria-forms";
 
 const form = new Form().field("username", (value) => {
-  if (!value) return "Please enter your username";
-  if (typeof value !== "string") return "Invalid input";
-  if (value.length < 4) return "Username must be at least 4 characters long";
-  return; // success
+  if (!value) throw "Please enter your username";
+  if (typeof value !== "string") throw "Invalid input";
+  if (value.length < 4) throw "Username must be at least 4 characters long";
+  return value;
 });
 
 const formData = new FormData(); // can be a regular object as well
 
-const errors = await form.validate(formData);
-/*
-usernameError will be typed as "Please enter..." or "Username must be..."
-*/
-const usernameError = errors?.username; // autocomplete
+const { data, errors } = await form.parse(formData);
+// intellisense
+const usernameError = errors?.username;
+const { username } = data;
 ```
 
 ## Reference
 
-### .field()
+## `Form`
 
-Creates a new field. `fieldName` cannot be an existing field name, and `validate` can be a synchronous or asynchronous function. A `void` return from `validate` will tell Adria the value has passed the validation.
+#### `field()`
+
+Creates a new field. `fieldName` cannot be an existing field name, and `parse` can be a synchronous or asynchronous function. The return value will be mapped to `data[fieldName]` of the return type of `parse()`.
 
 ```ts
 const field: (
   fieldName: string,
-  validate: (
+  parse: (
     value: null | FormDataEntryValue,
     formData: Map<string, FormDataEntryValue | null>
-  ) => MaybePromise<void | any>
-) => this;
+  ) => MaybePromise<any>
+) => Form;
 ```
 
-#### Example
+##### Example
 
 ```ts
 new Form()
   .field("username", (value) => {
     if (!value)
-      return {
+      throw {
         code: 0,
         message: "empty input",
       };
-    return; // success
+    return value; // success
   })
   .field("password", (_, formData) => {
     const usernameField = formData.get("username"); // autocompletes username, password
@@ -67,48 +70,35 @@ new Form()
   );
 ```
 
-### .validate()
+#### `parse()`
 
-Validates the form data. Will only check fields defined with `.field()`. Will return `null` if the form data is valid or a `fieldName:errorMessage` record if not.
+Validates and parses the form data. Will only check fields defined with `.field()`. Either `errors` or `data` will be `null`, but not both.
 
 ```ts
-const validate: (
-  formData: FormData | Record<any, any>
-) => Promise<Record<string, any> | null>;
+const parse: (formData: FormData | Record<any, any>) => Promise<{
+  errors: Record<string, any> | null; // <fieldName, error>
+  data: Record<string, any> | null; // <fieldName, parseResult>
+}>;
 ```
 
 #### Example
 
 ```ts
 const form = new Form()
-  .field("username", () => {
-    return "error";
+  .field("username", (val) => {
+    return val;
   })
-  .field("password", () => {
-    return {
-      code: 0,
-    };
+  .field("password", (val) => {
+    if (invalid) throw Error;
+    return val;
   });
 
-const errors = await form.validate(formData);
+const { errors, data } = await form.parse(formData);
 
-const userNameError: "fail" = errors.username; // autocomplete username, password
-const randomError = errors.random; // TS will yell at you since field random does not exist
-const passwordErrorCode: number = errors.password.code; // since password can return an object, code will be typed as number and not 0
-```
-
-## TypeScript
-
-In the previous example (`validate()`), errors will only be typed with a value when the validate function returns a string/number. We can fix this by typing the return value of the validate function `as const`.
-
-```ts
-const form = new Form().field("password", () => {
-  return {
-    code: 0,
-  } as const;
-});
-
-const errors = await form.validate(formData as FormData);
-
-const passwordErrorCode: number = errors.password.code; // typed as 0, and not number as before
+if (errors) {
+  const usernameError: undefined | unknown = errors.username;
+  const passwordError: undefined | unknown = errors.password;
+} else {
+  const { username, password } = data;
+}
 ```
