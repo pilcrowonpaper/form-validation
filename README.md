@@ -46,8 +46,8 @@ The result will be a `FieldName:DefinedType | null` record, where it's `null` if
 
 ### `InputType`
 
-- `PrimitiveType`
-- `${CompoundType}.${PrimitiveType}`
+- `PrimitiveType` (eg. `string`, `date`, etc)
+- `${CompoundType}.${PrimitiveType}` (eg. `array.string`)
 
 ### `PrimitiveType`
 
