@@ -1,104 +1,62 @@
 # Adria
 
-A super simple form validation and parsing library written in TypeScript. Works both in the client and server.
+A super simple library for parsing form data and search params. It makes it easy to narrow the type and convert the input to something useful before doing the validation.
 
 ```bash
-npm i adria-forms
-yarn add adria-forms
-pnpm add adria-forms
+npm i adria-parser
+yarn add adria-parser
+pnpm add adria-parser
 ```
-
-Demo: https://adria-demo.vercel.app
 
 ## Overview
 
 ```ts
-import { Form } from "adria-forms";
+import { parse } from "adria-parser";
 
-const form = new Form().field("username", (value) => {
-  if (!value) throw "Please enter your username";
-  if (typeof value !== "string") throw "Invalid input";
-  if (value.length < 4) throw "Username must be at least 4 characters long";
-  return value;
+const formData = new FormData();
+
+// intellisense
+const { username, age, profile_image, birthday interests } = parse(formData, {
+  username: "string",
+  age: "number",
+  profile_image: "file",
+  birthday: "date",
+  interests: "array.string",
 });
 
-const formData = new FormData(); // can be a regular object as well
+// null if empty or can't be converted to defined type
 
-const { data, errors } = await form.parse(formData);
-// intellisense
-const usernameError = errors?.username;
-const { username } = data;
+// username: string | null
+// age: number | null
+// profile_image: File | null
+// birthday: Date | null
+// interests: string[]
 ```
 
 ## Reference
 
-## `Form`
-
-#### `field()`
-
-Creates a new field. `fieldName` cannot be an existing field name, and `parse` can be a synchronous or asynchronous function. The return value will be mapped to `data[fieldName]` of the return type of `parse()`.
-
 ```ts
-const field: (
-  fieldName: string,
-  parse: (
-    value: null | FormDataEntryValue,
-    formData: Map<string, FormDataEntryValue | null>
-  ) => MaybePromise<any>
-) => Form;
+const parse: (
+  input: FormData | URLSearchParams,
+  schema: Record<string, InputType>
+) => Record<string, any>;
 ```
 
-##### Example
+The result will be a `FieldName:DefinedType | null` record, where it's `null` if the field didn't exist or it couldn't coerce the input to the defined type.
 
-```ts
-new Form()
-  .field("username", (value) => {
-    if (!value)
-      throw {
-        code: 0,
-        message: "empty input",
-      };
-    return value; // success
-  })
-  .field("password", (_, formData) => {
-    const usernameField = formData.get("username"); // autocompletes username, password
-    const passwordField = formData.get("randomFieldName"); // TS will yell at you since the field doesn't exist yet
-  })
-  .field(
-    "username" // TS will yell at you since this field already exists
-    // ...
-  );
-```
+### `InputType`
 
-#### `parse()`
+- `PrimitiveType`
+- `${CompoundType}.${PrimitiveType}`
 
-Validates and parses the form data. Will only check fields defined with `.field()`. Either `errors` or `data` will be `null`, but not both.
+### `PrimitiveType`
 
-```ts
-const parse: (formData: FormData | Record<any, any>) => Promise<{
-  errors: Record<string, any> | null; // <fieldName, error>
-  data: Record<string, any> | null; // <fieldName, parseResult>
-}>;
-```
+- `string` => `string`
+- `number` => `number`
+- `boolean` => `boolean`
+- `date` => `Date`
+- `file` => `File`
 
-#### Example
+### `CompoundType`
 
-```ts
-const form = new Form()
-  .field("username", (val) => {
-    return val;
-  })
-  .field("password", (val) => {
-    if (invalid) throw Error;
-    return val;
-  });
-
-const { errors, data } = await form.parse(formData);
-
-if (errors) {
-  const usernameError: undefined | unknown = errors.username;
-  const passwordError: undefined | unknown = errors.password;
-} else {
-  const { username, password } = data;
-}
-```
+- `array` => `T[]`
